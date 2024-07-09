@@ -86,6 +86,10 @@ contract TEST1 {
         setStudent("Jane", 70, emptyClasses);
     }
 
+    function initStudent() public {
+        delete Students;
+    }
+
     // 학생 조회 기능(1) - 특정 학생의 번호를 입력하면 그 학생 전체 정보를 반환
     function getStudentByNum(uint _n) public view returns(Student memory) {
         return Students[_n-1];
