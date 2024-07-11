@@ -37,10 +37,6 @@ contract TEST3 {
         signUp("d", "DD");
     }
 
-    function getPWhash(string memory _id) public view returns(bytes32) {
-        return loginInfo[_id];
-    }
-
     // 로그인 기능 - ID, PW를 넣으면 로그인 여부를 알려주는 기능
     function login(string memory _id, string memory _pw) public view returns(bool) {
         return PWhash(_id, _pw) == loginInfo[_id];
