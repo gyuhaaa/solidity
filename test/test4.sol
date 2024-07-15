@@ -46,9 +46,73 @@ contract TEST4 {
     address payable public smartcontract;
     address payable public admin;
 
+    string[4] room;
+
+    function getRoom() public view returns(string[4] memory) {
+        return room;
+    }
+
+    function setRoom(string memory _name) public {
+        require(checkExistUser(_name), "User does not exist.");
+        require(checkRoom(_name), "User already exist in room.");
+        if (abi.encodePacked(room[0]).length == 0) {
+            room[0] = _name;
+        } else if (abi.encodePacked(room[1]).length == 0) {
+            room[1] = _name;
+        } else if (abi.encodePacked(room[2]).length == 0) {
+            room[2] = _name;
+        } else if (abi.encodePacked(room[3]).length == 0) {
+            room[3] = _name;
+            setScore();
+            delete room;
+        }
+    }
+
+    // users에 존재하는 이름인지 확인
+    function checkExistUser(string memory _name) public view returns(bool) {
+        bool exist = false;
+
+        for (uint i=0; i<users.length; i++) {
+            if (keccak256(abi.encodePacked(_name)) == keccak256(abi.encodePacked(users[i].name))) {
+                exist = true;
+            }
+        }
+
+        return exist;
+    }
+
+    // room에 이미 존재하는지 확인
+    function checkRoom(string memory _name) public view returns(bool) {
+        bool nodup = true;
+
+        for (uint i=0; i<room.length; i++) {
+            if (keccak256(abi.encodePacked(_name)) == keccak256(abi.encodePacked(room[i]))) {
+                nodup = false;
+            }
+        }
+
+        return nodup;
+    }
+
+    function setScore() internal {
+        for (uint i=0; i<users.length; i++) {
+            if (keccak256(abi.encodePacked(users[i].name)) == keccak256(abi.encodePacked(room[0]))) {
+                users[i].score += 4;
+            } else if (keccak256(abi.encodePacked(users[i].name)) == keccak256(abi.encodePacked(room[1]))) {
+                users[i].score += 3;
+            } else if (keccak256(abi.encodePacked(users[i].name)) == keccak256(abi.encodePacked(room[2]))) {
+                users[i].score += 2;
+            } else if (keccak256(abi.encodePacked(users[i].name)) == keccak256(abi.encodePacked(room[3]))) {
+                users[i].score += 1;
+            }
+        }   
+    }
+
+
     // 유저 등록 기능 - 유저는 이름만 등록, 번호는 자동적으로 순차 증가, 주소도 자동으로 설정, 점수도 0으로 시작
     function setUser(string memory _name) public {
-        uint userCount;
+        require(!checkExistUser(_name), "User already exist in users.");
+        uint userCount = users.length + 1;
         users.push(User(userCount, _name, msg.sender, 0, 0));
     }
     
@@ -59,8 +123,13 @@ contract TEST4 {
 
     // 게임 참가시 참가비 제출 기능 - 참가시 0.01eth 지불 (돈은 smart contract가 보관)
     function deposit() public payable {
-        require(msg.value == 0.01 ether, "0.01 ETH is required to join the game.");
-        smartcontract.transfer(0.01 ether);
+        require(msg.value >= 0.01 ether, "0.01 ETH is required to join the game.");
+        smartcontract.transfer(msg.value);
+    }
+
+    // 스마트 컨트랙트 잔액 조회
+    function getBalanceOfSmartContract() public view returns(uint) {
+        return smartcontract.balance;
     }
 
     // 점수를 돈으로 바꾸는 기능 - 10점마다 0.1eth로 환전
@@ -74,7 +143,7 @@ contract TEST4 {
 
     // 관리자 인출 기능 - 관리자는 0번지갑으로 배포와 동시에 설정해주세요, 관리자는 원할 때 전액 혹은 일부 금액을 인출할 수 있음 (따로 구현)
     constructor() {
-        admin = address(0);        
+        admin = payable(address(0));        
     }
 
     modifier onlyAdmin() {
