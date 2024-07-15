@@ -48,6 +48,13 @@ contract TEST4 {
 
     string[4] room;
 
+    function pushUser() public {
+        users.push(User(1, "a", 0xdD870fA1b7C4700F2BD7f44238821C26f7392148, 0xdD870fA1b7C4700F2BD7f44238821C26f7392148.balance, 0));
+        users.push(User(2, "b", 0x583031D1113aD414F02576BD6afaBfb302140225, 0x583031D1113aD414F02576BD6afaBfb302140225.balance, 0));
+        users.push(User(3, "c", 0x4B0897b0513fdC7C541B6d9D7E929C4e5364D2dB, 0x4B0897b0513fdC7C541B6d9D7E929C4e5364D2dB.balance, 0));
+        users.push(User(4, "d", 0x14723A09ACff6D2A60DcdF7aA4AFf308FDDC160C, 0x14723A09ACff6D2A60DcdF7aA4AFf308FDDC160C.balance, 0));
+    }
+
     function getRoom() public view returns(string[4] memory) {
         return room;
     }
@@ -108,12 +115,11 @@ contract TEST4 {
         }   
     }
 
-
     // 유저 등록 기능 - 유저는 이름만 등록, 번호는 자동적으로 순차 증가, 주소도 자동으로 설정, 점수도 0으로 시작
     function setUser(string memory _name) public {
         require(!checkExistUser(_name), "User already exist in users.");
         uint userCount = users.length + 1;
-        users.push(User(userCount, _name, msg.sender, 0, 0));
+        users.push(User(userCount, _name, msg.sender, msg.sender.balance, 0));
     }
     
     // 유저 조회 기능 - 유저의 전체정보 번호, 이름, 주소, 점수를 반환.
@@ -124,32 +130,33 @@ contract TEST4 {
     // 게임 참가시 참가비 제출 기능 - 참가시 0.01eth 지불 (돈은 smart contract가 보관)
     function deposit() public payable {
         require(msg.value >= 0.01 ether, "0.01 ETH is required to join the game.");
-        smartcontract.transfer(msg.value);
-    }
-
-    // 스마트 컨트랙트 잔액 조회
-    function getBalanceOfSmartContract() public view returns(uint) {
-        return smartcontract.balance;
     }
 
     // 점수를 돈으로 바꾸는 기능 - 10점마다 0.1eth로 환전
     function exchangeMoney(uint _userNumber) public {
-        uint exchangeableScore = users[_userNumber].score / 10;
+        require(_userNumber-1 < users.length, "Invalid user number.");
+        require(users[_userNumber-1].score >= 10, "Not enough score to exchange.");
+
+        uint exchangeableScore = users[_userNumber-1].score / 10;
         uint amount = exchangeableScore * 0.1 ether;
 
-        users[_userNumber].score -= exchangeableScore * 10;
-        payable(users[_userNumber].addr).transfer(amount);
+        require(address(this).balance >= amount, "Contract doesn't have enough balance.");
+
+        users[_userNumber-1].score -= exchangeableScore * 10;
+        users[_userNumber-1].balance += 0.1 ether;
+        payable(users[_userNumber-1].addr).transfer(amount);
     }
 
     // 관리자 인출 기능 - 관리자는 0번지갑으로 배포와 동시에 설정해주세요, 관리자는 원할 때 전액 혹은 일부 금액을 인출할 수 있음 (따로 구현)
     constructor() {
-        admin = payable(address(0));        
+        admin = payable(address(0));
     }
 
     modifier onlyAdmin() {
         require(msg.sender == admin, "Only admin can call this function");
         _;
     } 
+    
     // 관리자가 전액을 인출하는 함수
     function withdrawAll() public payable onlyAdmin {
         uint amount = smartcontract.balance;
