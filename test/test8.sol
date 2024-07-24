@@ -34,8 +34,6 @@ contract TEST8 {
         address addr;
         Agenda[] myAgendas;
         Agenda[] myVotedAgendas;
-        // mapping(address => myAgendas) mapMyAgendas;
-        // mapping(address => myVotedAgendas) mapMyVotedAgendas;
         mapping(string => bool) isYes;
     }
 
