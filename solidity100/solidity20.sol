@@ -165,14 +165,12 @@ contract Q20 {
     uint[] numbers;
 
     function setNum(uint _n) public {
-        if (numbers.length < 15) {
-            require(numbers.length<15);
-            numbers.push(_n);
-        } else {
-            for (uint i=0; i<numbers.length; i++) {
-                if (i % 3 == 2) {
-                    delete numbers[i];
-                }
+        require(numbers.length<15, "Array is full");
+        numbers.push(_n);
+
+        if (numbers.length == 15) {
+            for (uint i = 2; i < numbers.length; i += 3) {
+                delete numbers[i];
             }
         }
     }
