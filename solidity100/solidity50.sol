@@ -9,23 +9,17 @@ contract Q41 {
     */
 
     uint[4] numberArray;
+    uint currentIndex;
 
     function setArray(uint _n) public {
-        if (numberArray[0] == 0) {
-            numberArray[0] = _n;
-        } else if (numberArray[1] == 0) {
-            numberArray[1] = _n;
-        } else if (numberArray[2] == 0) {
-            numberArray[2] = _n;
-        } else if (numberArray[3] == 0) {
-            numberArray[3] = _n;
-        } else {
-            revert("Array is full");
-        }
+        require(currentIndex < 4, "Array is full");
+        numberArray[currentIndex] = _n;
+        currentIndex++;
     }
 
     function initArray() public {
         delete numberArray;
+        currentIndex = 0;
     }
 
     function getArray() public view returns(uint[4] memory) {
@@ -42,14 +36,15 @@ contract Q42 {
     struct Customer {
         string name;
         uint number;
+        address addr;
     }
 
     Customer[] customers;
 
-    function setCustomer(string memory _name) public {
+    function setCustomer(string memory _name, address _addr) public {
         require(bytes(_name).length >= 5, "Name length must be greater than 5");
         uint _number = customers.length + 1;
-        customers.push(Customer(_name, _number));
+        customers.push(Customer(_name, _number, _addr));
     }
 
     function getCustomer() public view returns(Customer[] memory) {
@@ -69,7 +64,7 @@ contract Q43 {
 
     function deposit() public payable {
         require(msg.value > 0, "Give me the money");
-        mapAddressToBalance[msg.sender] = msg.value;
+        mapAddressToBalance[msg.sender] += msg.value;
     }
 
     function getBalance() public view returns(uint) {
