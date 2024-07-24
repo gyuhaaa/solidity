@@ -126,11 +126,7 @@ contract Q17 {
         이 함수는 true 혹은 false를 반환하는데 Bob이라는 이름이 들어왔을 때에만 true를 반환합니다. 
     */
     function checkBob(string memory _s) public pure returns(bool) {
-        if (keccak256(bytes(_s)) == keccak256(bytes("Bob"))) {
-            return true;
-        } else {
-            return false;
-        }
+        return keccak256(bytes(_s)) == keccak256(bytes("Bob"));
     }
 }
 
@@ -181,7 +177,7 @@ contract Q20 {
         }
     }
 
-    // function getNum() public view returns(uint[] memory) {
-    //     return numbers;
-    // }
+    function getNum() public view returns(uint[] memory) {
+        return numbers;
+    }
 }
