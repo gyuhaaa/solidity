@@ -38,15 +38,10 @@ contract Q52 {
         자동으로 아이디를 만들어주는 함수를 구현하세요. 이름, 생일, 지갑주소를 기반으로 만든 해시값의 첫 10바이트를 추출하여 아이디로 만드시오.
     */
 
-    function createId(string memory _name, uint _birth, address _addr) public pure returns(bytes memory) {
+    function createId(string memory _name, uint _birth, address _addr) public pure returns(bytes10) {
         bytes32 hashConcat = keccak256(abi.encodePacked(_name, _birth, _addr));
-        
-        bytes memory id = new bytes(10);
-        for(uint i=0; i<10; i++) {
-            id[i] = hashConcat[i];
-        }
 
-        return id;
+        return bytes10(hashConcat);
     }
 }
 
@@ -90,29 +85,14 @@ contract Q54 {
         uint donation;
     }
 
-    Donor[] donors;
+    Donor public bestDonor;
 
     function deposit() public payable {
         require(msg.value > 0, "There's no deposit");
-        donors.push(Donor(msg.sender, msg.value));
-    }
-
-    function getBestDonor() public view returns(Donor memory) {
-        uint bestDonation;
-        Donor memory bestDonor;
-
-        for (uint i=0; i<donors.length; i++) {
-            if (bestDonation < donors[i].donation) {
-                bestDonation = donors[i].donation;
-                bestDonor = donors[i];
-            }
+        if (msg.value > bestDonor.donation) {
+            bestDonor.addr = msg.sender;
+            bestDonor.donation = msg.value;
         }
-
-        return bestDonor;
-    }
-
-    function getDonors() public view returns(Donor[] memory) {
-        return donors;
     }
 }
 
@@ -241,15 +221,15 @@ contract Q60 {
     */
 
     enum Room { A, B }
-    string[] guests;
+    string[3] guests;
     mapping(uint => mapping(Room => string[])) reservations;
 
     function addReservation(uint _date, Room _room, string[] memory _guests) public {
-        require(_guests.length < 3, "Too many guests");
+        require(_guests.length <= 3, "Too many guests");
         reservations[_date][_room] = _guests;
 
         for (uint8 i=0; i < _guests.length; i++) {
-            guests.push(_guests[i]);
+            guests[i] = _guests[i];
         }
     }
 
