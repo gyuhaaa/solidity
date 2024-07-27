@@ -88,6 +88,10 @@ contract Q66 {
     */
 
     function getTenDigit(uint _n) public pure returns(uint) {
+        if (_n == 0) {
+            return 1;
+        }
+
         uint digit;
         while (_n > 0) {
             _n /= 10;
@@ -97,6 +101,10 @@ contract Q66 {
     }
 
     function getFiveDigit(uint _n) public pure returns(uint) {
+        if (_n == 0) {
+            return 1;
+        }
+
         uint digit;
         while (_n > 0) {
             _n /= 5;
