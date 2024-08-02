@@ -191,42 +191,46 @@ contract Q98 {
 
 contract Q99 {
     /*
-        inline - 4개의 숫자를 받아서 가장 큰수와 작은 수를 반환하는 함수를 구현하세요.
+        inline - bytes4형 b의 값을 정하는 함수 setB를 구현하세요.
     */
-    function minMax(uint _a, uint _b, uint _c, uint _d) public pure returns (uint min, uint max) {
+    bytes4 public b;
+    
+    function setB(bytes4 _b) public {
         assembly {
-            min := _a
-            max := _a
-
-            if lt(_b, min) { min := _b }
-            if gt(_b, max) { max := _b }
-
-            if lt(_c, min) { min := _c }
-            if gt(_c, max) { max := _c }
-
-            if lt(_d, min) { min := _d }
-            if gt(_d, max) { max := _d }
+            sstore(b.slot, shr(224, _b))
         }
     }
 }
 
 contract Q100 {
     /*
-        inline - 4개의 숫자를 받아서 가장 큰수와 작은 수를 반환하는 함수를 구현하세요.
+        inline - bytes형 변수 b의 값을 정하는 함수 setB를 구현하세요.
     */
-    function minMax(uint _a, uint _b, uint _c, uint _d) public pure returns (uint min, uint max) {
+    bytes public b;
+    
+    function setB(bytes memory _b) public {
         assembly {
-            min := _a
-            max := _a
-
-            if lt(_b, min) { min := _b }
-            if gt(_b, max) { max := _b }
-
-            if lt(_c, min) { min := _c }
-            if gt(_c, max) { max := _c }
-
-            if lt(_d, min) { min := _d }
-            if gt(_d, max) { max := _d }
+            let length := mload(_b)
+            let ptr := add(_b, 0x20)
+            let size := shl(1, length)
+            
+            switch lt(length, 32)
+            case 1 {
+                sstore(b.slot, or(mload(ptr), size))
+            }
+            default {
+                sstore(b.slot, add(size, 1))
+                mstore(0x00, b.slot)
+                let nSlot := keccak256(0x00, 0x20)
+                
+                for { let i := 0 } lt(i, length) { i := add(i, 0x20) } {
+                    sstore(nSlot, mload(add(ptr, i)))
+                    nSlot := add(nSlot, 1)
+                }
+                
+                let lastSlot := mload(add(ptr, sub(length, mod(length, 0x20))))
+                sstore(nSlot, lastSlot)
+            }
         }
     }
 }
