@@ -206,4 +206,16 @@ contract Q90 {
         당신 지갑의 이름을 알려주세요. 아스키 코드를 이용하여 byte를 string으로 바꿔주세요.
     */
 
+    function myWallet(address _addr) public pure returns (string memory) {
+        bytes20 bytesAddr = bytes20(_addr);
+        bytes memory alphabet = "0123456789abcdef";
+
+        bytes memory str = new bytes(40);
+        for (uint i=0; i<20; i++) {
+            str[i * 2] = alphabet[uint8(bytesAddr[i] >> 4)];
+            str[1 + i * 2] = alphabet[uint8(bytesAddr[i] & 0x0f)];
+        }
+
+        return string(str);
+    }
 }
